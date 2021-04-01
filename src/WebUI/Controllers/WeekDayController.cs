@@ -1,4 +1,6 @@
 ﻿using CleanArchitecture.Application.WeekDays.Commands.CreateWeekDay;
+using CleanArchitecture.Application.WeekDays.Commands.DeleteWeekDay;
+using CleanArchitecture.Application.WeekDays.Commands.UpdateWeekDay;
 using CleanArchitecture.Application.WeekDays.Queries.ExportDaySubjects;
 using CleanArchitecture.Application.WeekDays.Queries.GetWeekDays;
 using Microsoft.AspNetCore.Mvc;
@@ -31,10 +33,25 @@ namespace CleanArchitecture.WebUI.Controllers
             return await Mediator.Send(command);
         }
 
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult> Update(int id, UpdateTodoListCommand command)
-        //{
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update(int id, UpdateWeekDayCommand command)
+        {
+            if (id != command.Id)
+            {
+                return BadRequest();
+            }
 
-        //}
+            await Mediator.Send(command);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            await Mediator.Send(new DeleteWeekDayCommand { Id = id });
+
+            return NoContent();
+        }
     }
 }
