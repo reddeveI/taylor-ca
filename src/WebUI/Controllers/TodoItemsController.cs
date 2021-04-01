@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 
 namespace CleanArchitecture.WebUI.Controllers
 {
-    [Authorize]
     public class TodoItemsController : ApiControllerBase
     {
         [HttpGet]

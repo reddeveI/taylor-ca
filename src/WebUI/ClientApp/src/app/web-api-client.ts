@@ -647,6 +647,72 @@ export class WeatherForecastClient implements IWeatherForecastClient {
     }
 }
 
+export interface IWeekDayClient {
+    get(): Observable<WeekDaysVm>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class WeekDayClient implements IWeekDayClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    get(): Observable<WeekDaysVm> {
+        let url_ = this.baseUrl + "/api/WeekDay";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(<any>response_);
+                } catch (e) {
+                    return <Observable<WeekDaysVm>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<WeekDaysVm>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<WeekDaysVm> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = WeekDaysVm.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<WeekDaysVm>(<any>null);
+    }
+}
+
 export class PaginatedListOfTodoItemDto implements IPaginatedListOfTodoItemDto {
     items?: TodoItemDto[] | undefined;
     pageIndex?: number;
@@ -1180,6 +1246,210 @@ export interface IWeatherForecast {
     temperatureC?: number;
     temperatureF?: number;
     summary?: string | undefined;
+}
+
+export class WeekDaysVm implements IWeekDaysVm {
+    priorityLevels?: PriorityLevelDto2[] | undefined;
+    days?: WeekDayDto[] | undefined;
+
+    constructor(data?: IWeekDaysVm) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["priorityLevels"])) {
+                this.priorityLevels = [] as any;
+                for (let item of _data["priorityLevels"])
+                    this.priorityLevels!.push(PriorityLevelDto2.fromJS(item));
+            }
+            if (Array.isArray(_data["days"])) {
+                this.days = [] as any;
+                for (let item of _data["days"])
+                    this.days!.push(WeekDayDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): WeekDaysVm {
+        data = typeof data === 'object' ? data : {};
+        let result = new WeekDaysVm();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.priorityLevels)) {
+            data["priorityLevels"] = [];
+            for (let item of this.priorityLevels)
+                data["priorityLevels"].push(item.toJSON());
+        }
+        if (Array.isArray(this.days)) {
+            data["days"] = [];
+            for (let item of this.days)
+                data["days"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IWeekDaysVm {
+    priorityLevels?: PriorityLevelDto2[] | undefined;
+    days?: WeekDayDto[] | undefined;
+}
+
+export class PriorityLevelDto2 implements IPriorityLevelDto2 {
+    value?: number;
+    name?: string | undefined;
+
+    constructor(data?: IPriorityLevelDto2) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.value = _data["value"];
+            this.name = _data["name"];
+        }
+    }
+
+    static fromJS(data: any): PriorityLevelDto2 {
+        data = typeof data === 'object' ? data : {};
+        let result = new PriorityLevelDto2();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["value"] = this.value;
+        data["name"] = this.name;
+        return data; 
+    }
+}
+
+export interface IPriorityLevelDto2 {
+    value?: number;
+    name?: string | undefined;
+}
+
+export class WeekDayDto implements IWeekDayDto {
+    id?: number;
+    title?: string | undefined;
+    colour?: string | undefined;
+    subjects?: SubjectDto[] | undefined;
+
+    constructor(data?: IWeekDayDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.title = _data["title"];
+            this.colour = _data["colour"];
+            if (Array.isArray(_data["subjects"])) {
+                this.subjects = [] as any;
+                for (let item of _data["subjects"])
+                    this.subjects!.push(SubjectDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): WeekDayDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new WeekDayDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["title"] = this.title;
+        data["colour"] = this.colour;
+        if (Array.isArray(this.subjects)) {
+            data["subjects"] = [];
+            for (let item of this.subjects)
+                data["subjects"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IWeekDayDto {
+    id?: number;
+    title?: string | undefined;
+    colour?: string | undefined;
+    subjects?: SubjectDto[] | undefined;
+}
+
+export class SubjectDto implements ISubjectDto {
+    id?: number;
+    dayId?: number;
+    title?: string | undefined;
+    done?: boolean;
+    priority?: number;
+
+    constructor(data?: ISubjectDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.dayId = _data["dayId"];
+            this.title = _data["title"];
+            this.done = _data["done"];
+            this.priority = _data["priority"];
+        }
+    }
+
+    static fromJS(data: any): SubjectDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SubjectDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["dayId"] = this.dayId;
+        data["title"] = this.title;
+        data["done"] = this.done;
+        data["priority"] = this.priority;
+        return data; 
+    }
+}
+
+export interface ISubjectDto {
+    id?: number;
+    dayId?: number;
+    title?: string | undefined;
+    done?: boolean;
+    priority?: number;
 }
 
 export interface FileResponse {

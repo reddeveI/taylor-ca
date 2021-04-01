@@ -11,6 +11,10 @@ namespace CleanArchitecture.Application.Common.Interfaces
 
         DbSet<TodoItem> TodoItems { get; set; }
 
+        DbSet<WeekDay> WeekDays { get; set; }
+
+        DbSet<Subject> Subjects { get; set; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

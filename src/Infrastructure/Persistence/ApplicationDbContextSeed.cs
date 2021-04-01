@@ -51,6 +51,22 @@ namespace CleanArchitecture.Infrastructure.Persistence
 
                 await context.SaveChangesAsync();
             }
+
+            if (!context.WeekDays.Any())
+            {
+                context.WeekDays.Add(new WeekDay
+                {
+                    Title = "Monday",
+                    Colour = Colour.Blue,
+                    Subjects =
+                    {
+                        new Subject { Title = "History", Done = true },
+                        new Subject { Title = "Math", Done = false },
+                    }
+                });
+
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
