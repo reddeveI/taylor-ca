@@ -14,5 +14,13 @@ namespace CleanArchitecture.WebUI.Controllers
         {
             return await Mediator.Send(new GetWeekDaysQuery());
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult> Get(int id)
+        {
+            //var vm = await Mediator.Send(new ExportDaySubjectsQuery {  })
+
+            return Ok();
+        }
     }
 }
