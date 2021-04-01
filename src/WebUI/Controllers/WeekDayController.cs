@@ -1,4 +1,6 @@
-﻿using CleanArchitecture.Application.WeekDays.Queries.GetWeekDays;
+﻿using CleanArchitecture.Application.WeekDays.Commands.CreateWeekDay;
+using CleanArchitecture.Application.WeekDays.Queries.ExportDaySubjects;
+using CleanArchitecture.Application.WeekDays.Queries.GetWeekDays;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -16,11 +18,23 @@ namespace CleanArchitecture.WebUI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult> Get(int id)
+        public async Task<FileResult> Get(int id)
         {
-            //var vm = await Mediator.Send(new ExportDaySubjectsQuery {  })
+            var vm = await Mediator.Send(new ExportDaySubjectsQuery { DayId = id });
 
-            return Ok();
+            return File(vm.Content, vm.ContentType, vm.FileName);
         }
+
+        [HttpPost]
+        public async Task<ActionResult<int>> Create(CreateWeekDayCommand command)
+        {
+            return await Mediator.Send(command);
+        }
+
+        //[HttpPut("{id}")]
+        //public async Task<ActionResult> Update(int id, UpdateTodoListCommand command)
+        //{
+
+        //}
     }
 }

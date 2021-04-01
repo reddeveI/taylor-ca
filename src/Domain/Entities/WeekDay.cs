@@ -14,7 +14,7 @@ namespace CleanArchitecture.Domain.Entities
 
         public string Title { get; set; }
 
-        public Colour Colour { get; set; }
+        public Colour Colour { get; set; } = Colour.White;
 
         public IList<Subject> Subjects { get; private set; } = new List<Subject>();
     }
